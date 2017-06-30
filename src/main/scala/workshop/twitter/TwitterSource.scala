@@ -24,6 +24,7 @@ class TwitterSource(implicit actorSystem: ActorSystem, materializer: ActorMateri
     *
     * @return Akka Source of Tweets
     */
+
   def listen(query: Option[FilterQuery] = None): Source[Tweet, NotUsed] = ???
 
   def close() = {
