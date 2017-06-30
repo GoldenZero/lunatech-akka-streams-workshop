@@ -42,10 +42,13 @@ class Examples1 extends FunSuite {
   }
 
   //Q2: What this code will print
-  test("using given stream blueprint twice") {
-    val stream = Source((1 to 3)).to(Sink.foreach(println))
-    stream.async.run
-    stream.async.run
+  ignore("using given stream blueprint twice") {
+    val stream = Source((1 to 30)).map(_ * 4).async.filter(_ > 20).to(Sink.foreach(println))
+
+//    val stream = Source((1 to 30)).map(_ * 4).filter(_ > 20).to(Sink.foreach(println))
+//    val stream = Source((1 to 30)).map(_ * 4).filter(_ > 20).to(Sink.foreach(println))
+    stream.run
+    stream.run
     //TODO try stream.async.run
   }
 
@@ -69,7 +72,7 @@ class Examples1 extends FunSuite {
     val iterator = Iterator.from(1)
     val stream3 = Source.fromIterator(() => iterator).take(5).to(Sink.foreach(println))
     val stream4 = Source.tick(0.seconds, 100.millis, "a").to(Sink.foreach(println))
-    stream3.run
+    stream2.run
     //TODO run other streams, one at a time
   }
 
@@ -79,9 +82,12 @@ class Examples1 extends FunSuite {
     //type of incoming element is Int, type of outgoing element is Int, materialization type is NotUsed
     //Flow[Int](.apply) is a helper constructor to create a Flow[Int, Int, ...] which outputs all inputs without modification
     val flow: Flow[Int, Int, NotUsed] = Flow[Int].map(_ + 1)
+
     val source = Source(List(1, 2, 3))
+    val source2 = Source((1 to 30))
     val sink = Sink.foreach(println)
     val stream = source.via(flow).to(sink)
+    source2.via(flow).runForeach(println)
     stream.run
   }
 
@@ -129,7 +135,20 @@ class Examples1 extends FunSuite {
   //reduce
   ignore("reduce"){
     val naturalNumbersSource = Source.fromIterator(() => Iterator.from(1))
-    val stream = naturalNumbersSource.take(10).reduce(_ + _).to(Sink.foreach(println))
+    val stream = naturalNumbersSource
+      .take(100)
+      .mapAsyncUnordered(14){ x =>
+        println(s"Processing ${x}")
+        Thread.sleep(100)
+        Future.successful(x)
+      }
+      .mapAsyncUnordered(2){ x =>
+        println(s"Sleep 30ms  for number: ${x}")
+        Thread.sleep(30)
+        Future.successful(x)
+      }
+      .reduce(_ + _)
+      .to(Sink.foreach(println))
     stream.run
   }
 
