@@ -9,7 +9,7 @@ version := "1.0"
 
 scalaVersion := "2.12.2"
 
-mainClass in(Compile, run) := Some("com.lunatech.workshops.akka.sentiment.TwitterSentimentAnalyzer")
+mainClass in(Compile, run) := Some("workshop.TwitterSentimentAnalyzer")
 
 libraryDependencies ++= Seq(
   //Akka Streams
